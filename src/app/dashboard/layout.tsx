@@ -1,5 +1,3 @@
-import { createSupabaseServerClient } from '@/lib/supabase'
-import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 
 export default async function DashboardLayout({
@@ -7,25 +5,6 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createSupabaseServerClient()
-  
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (!session) {
-    redirect('/auth/login')
-  }
-  
-  // Check if user is school admin
-  const { data: admin } = await supabase
-    .from('administrators')
-    .select('role, is_active')
-    .eq('user_id', session.user.id)
-    .single()
-  
-  if (!admin || admin.role !== 'school_admin' || !admin.is_active) {
-    redirect('/auth/login')
-  }
-
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />

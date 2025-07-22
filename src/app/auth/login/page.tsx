@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createSupabaseClient } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,56 +14,22 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const supabase = createSupabaseClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (authError) {
-        setError(authError.message)
-        return
-      }
-
-      if (authData.user) {
-        // Check user role
-        const { data: admin, error: adminError } = await supabase
-          .from('administrators')
-          .select('role, school_id, is_active')
-          .eq('user_id', authData.user.id)
-          .single()
-
-        if (adminError || !admin) {
-          setError('User not found or not authorized')
-          await supabase.auth.signOut()
-          return
-        }
-
-        if (!admin.is_active) {
-          setError('Account is deactivated. Please contact administrator.')
-          await supabase.auth.signOut()
-          return
-        }
-
-        // Redirect based on role
-        if (admin.role === 'super_admin') {
-          router.push('/super-admin')
-        } else if (admin.role === 'school_admin') {
-          router.push('/dashboard')
-        }
-      }
-    } catch (error) {
-      setError('An unexpected error occurred')
-    } finally {
-      setIsLoading(false)
+    // Demo login logic - replace with actual Supabase authentication
+    if (email === 'admin@schoolnexus.com' && password === 'admin123') {
+      router.push('/super-admin')
+    } else if (email === 'school@schoolnexus.com' && password === 'school123') {
+      router.push('/dashboard')
+    } else {
+      setError('Invalid credentials. Try admin@schoolnexus.com / admin123 or school@schoolnexus.com / school123')
     }
+    
+    setIsLoading(false)
   }
 
   return (
@@ -72,7 +37,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
               <School className="w-8 h-8 text-white" />
             </div>
           </div>
@@ -106,7 +71,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@school.com"
+                    placeholder="admin@schoolnexus.com"
                     className="pl-10"
                     required
                   />
@@ -148,12 +113,11 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Forgot your password?{' '}
-                <a href="#" className="text-primary hover:underline">
-                  Reset it here
-                </a>
-              </p>
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md text-sm">
+                <p className="font-medium mb-2">Demo Credentials:</p>
+                <p><strong>Super Admin:</strong> admin@schoolnexus.com / admin123</p>
+                <p><strong>School Admin:</strong> school@schoolnexus.com / school123</p>
+              </div>
             </div>
           </CardContent>
         </Card>
