@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { createSupabaseClient } from '@/lib/supabase'
 import {
   LayoutDashboard,
   Users,
@@ -18,7 +19,6 @@ import {
   X
 } from 'lucide-react'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 const menuItems = [
   {
@@ -70,11 +70,21 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const router = useRouter()
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const supabase = createSupabaseClient()
 
   const handleLogout = async () => {
-    router.push('/auth/login')
+    setIsLoggingOut(true)
+    try {
+      await supabase.auth.signOut()
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -147,10 +157,11 @@ export function Sidebar() {
             <div className="border-t border-purple-300 border-opacity-20 pt-4">
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full px-4 py-3 text-sm font-medium text-purple-100 rounded-lg hover:bg-white hover:bg-opacity-10 hover:text-white transition-colors duration-200"
+                disabled={isLoggingOut}
+                className="flex items-center w-full px-4 py-3 text-sm font-medium text-purple-100 rounded-lg hover:bg-white hover:bg-opacity-10 hover:text-white transition-colors duration-200 disabled:opacity-50"
               >
                 <LogOut className="w-5 h-5 mr-3" />
-                Sign Out
+                {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
               </button>
             </div>
           </div>
