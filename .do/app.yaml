@@ -1,0 +1,40 @@
+name: schoolnexus
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: your-username/schoolnexus
+    branch: main
+    deploy_on_push: true
+  run_command: npm start
+  build_command: npm run build
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 3000
+  routes:
+  - path: /
+  health_check:
+    http_path: /api/health
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: NEXT_PUBLIC_APP_NAME
+    value: SchoolNexus
+  - key: NEXT_PUBLIC_APP_URL
+    value: ${APP_URL}
+  - key: NEXT_PUBLIC_SUPABASE_URL
+    value: ${NEXT_PUBLIC_SUPABASE_URL}
+    type: SECRET
+  - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    value: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    type: SECRET
+  - key: SUPABASE_SERVICE_ROLE_KEY
+    value: ${SUPABASE_SERVICE_ROLE_KEY}
+    type: SECRET
+  - key: NEXTAUTH_SECRET
+    value: ${NEXTAUTH_SECRET}
+    type: SECRET
+  - key: JWT_SECRET
+    value: ${JWT_SECRET}
+    type: SECRET
