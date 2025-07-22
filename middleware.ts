@@ -1,105 +1,64 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createMiddlewareSupabaseClient } from '@/lib/supabase'
+import { verifyToken } from '@/lib/auth'
 
-export async function middleware(request: NextRequest) {
-  const { supabase, response } = createMiddlewareSupabaseClient(request)
-  
-  // Refresh session if expired - required for Server Components
-  const { data: { session } } = await supabase.auth.getSession()
+export async function middleware(req: NextRequest) {
+  // Protected routes that require authentication
+  const protectedRoutes = ['/dashboard', '/super-admin', '/teacher', '/student', '/parent']
+  const isProtectedRoute = protectedRoutes.some(route => 
+    req.nextUrl.pathname.startsWith(route)
+  )
 
-  const url = request.nextUrl.clone()
-  const pathname = url.pathname
+  // Get token from cookie
+  const token = req.cookies.get('auth-token')?.value
 
-  // Public routes that don't require authentication
-  const publicRoutes = ['/', '/auth/login', '/auth/signup']
-  
-  // Check if the current path is public
-  const isPublicRoute = publicRoutes.includes(pathname) || 
-                       pathname.startsWith('/api/auth') ||
-                       pathname.startsWith('/_next') ||
-                       pathname.startsWith('/favicon.ico') ||
-                       pathname.startsWith('/manifest.json') ||
-                       pathname.startsWith('/icons')
-
-  // If no session and trying to access protected route, redirect to login
-  if (!session && !isPublicRoute) {
-    url.pathname = '/auth/login'
-    url.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(url)
-  }
-
-  // If user is authenticated, check role-based access
-  if (session) {
+  let user = null
+  if (token) {
     try {
-      // Get user role from administrators table
-      const { data: admin } = await supabase
-        .from('administrators')
-        .select('role, school_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (admin) {
-        // Super admin trying to access school admin routes
-        if (admin.role === 'super_admin' && pathname.startsWith('/dashboard')) {
-          url.pathname = '/super-admin'
-          return NextResponse.redirect(url)
-        }
-
-        // School admin trying to access super admin routes
-        if (admin.role === 'school_admin' && pathname.startsWith('/super-admin')) {
-          url.pathname = '/dashboard'
-          return NextResponse.redirect(url)
-        }
-
-        // Redirect authenticated users from login page to appropriate dashboard
-        if (pathname === '/auth/login') {
-          if (admin.role === 'super_admin') {
-            url.pathname = '/super-admin'
-          } else {
-            url.pathname = '/dashboard'
-          }
-          return NextResponse.redirect(url)
-        }
-
-        // Redirect from root to appropriate dashboard
-        if (pathname === '/' && session) {
-          if (admin.role === 'super_admin') {
-            url.pathname = '/super-admin'
-          } else {
-            url.pathname = '/dashboard'
-          }
-          return NextResponse.redirect(url)
-        }
-      } else {
-        // User exists but not in administrators table - redirect to login
-        if (!isPublicRoute) {
-          url.pathname = '/auth/login'
-          return NextResponse.redirect(url)
-        }
-      }
+      user = verifyToken(token)
     } catch (error) {
-      console.error('Error checking user role:', error)
-      // On error, redirect to login if accessing protected route
-      if (!isPublicRoute) {
-        url.pathname = '/auth/login'
-        return NextResponse.redirect(url)
-      }
+      // Token is invalid, continue without user
     }
   }
 
-  return response
+  // If accessing a protected route without valid authentication, redirect to login
+  if (isProtectedRoute && !user) {
+    const redirectUrl = new URL('/auth/login', req.url)
+    redirectUrl.searchParams.set('returnUrl', req.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // If authenticated user tries to access login page, redirect to appropriate dashboard
+  if (req.nextUrl.pathname === '/auth/login' && user) {
+    // Redirect based on role
+    switch (user.role) {
+      case 'super_admin':
+        return NextResponse.redirect(new URL('/super-admin', req.url))
+      case 'school_admin':
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+      case 'teacher':
+        return NextResponse.redirect(new URL('/teacher', req.url))
+      case 'student':
+        return NextResponse.redirect(new URL('/student', req.url))
+      case 'parent':
+        return NextResponse.redirect(new URL('/parent', req.url))
+      default:
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public files (public folder)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }

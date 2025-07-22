@@ -1,20 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { testConnection } from '@/lib/database'
 
 export async function GET() {
   try {
     const startTime = Date.now()
     
     // Check database connection
-    const supabase = createSupabaseClient()
-    const { data, error } = await supabase
-      .from('schools')
-      .select('id')
-      .limit(1)
-      .single()
+    const isConnected = await testConnection()
     
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-      throw new Error(`Database connection failed: ${error.message}`)
+    if (!isConnected) {
+      throw new Error('Database connection failed')
     }
     
     const responseTime = Date.now() - startTime
@@ -56,14 +51,9 @@ export async function GET() {
 // Also handle HEAD requests for load balancer health checks
 export async function HEAD() {
   try {
-    const supabase = createSupabaseClient()
-    const { error } = await supabase
-      .from('schools')
-      .select('id')
-      .limit(1)
-      .single()
+    const isConnected = await testConnection()
     
-    if (error && error.code !== 'PGRST116') {
+    if (!isConnected) {
       return new Response(null, { status: 503 })
     }
     

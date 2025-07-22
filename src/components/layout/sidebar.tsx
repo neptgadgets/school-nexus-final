@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getCurrentUser, logout } from '@/lib/api'
 import {
   LayoutDashboard,
   Users,
@@ -121,7 +121,7 @@ export function Sidebar() {
   const router = useRouter()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const supabase = createSupabaseClient()
+  const supabase = getCurrentUser()
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
