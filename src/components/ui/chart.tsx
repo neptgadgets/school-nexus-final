@@ -1,31 +1,35 @@
 'use client'
 
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-
-interface PieChartData {
-  name: string
-  value: number
-  color: string
-}
-
-interface BarChartData {
-  name: string
-  value: number
-}
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
 
 interface CustomPieChartProps {
-  data: PieChartData[]
-  width?: number
+  data: Array<{
+    name: string
+    value: number
+    color: string
+  }>
   height?: number
 }
 
 interface CustomBarChartProps {
-  data: BarChartData[]
-  width?: number
+  data: Array<{
+    name: string
+    value: number
+  }>
   height?: number
+  color?: string
 }
 
-export function CustomPieChart({ data, width = 300, height = 300 }: CustomPieChartProps) {
+interface CustomLineChartProps {
+  data: Array<{
+    name: string
+    value: number
+  }>
+  height?: number
+  color?: string
+}
+
+export function CustomPieChart({ data, height = 300 }: CustomPieChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
@@ -33,22 +37,22 @@ export function CustomPieChart({ data, width = 300, height = 300 }: CustomPieCha
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={100}
-          paddingAngle={5}
+          labelLine={false}
+          outerRadius={80}
+          fill="#8884d8"
           dataKey="value"
         >
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.color} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
       </PieChart>
     </ResponsiveContainer>
   )
 }
 
-export function CustomBarChart({ data, width = 400, height = 300 }: CustomBarChartProps) {
+export function CustomBarChart({ data, height = 300, color = '#3b82f6' }: CustomBarChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data}>
@@ -56,8 +60,22 @@ export function CustomBarChart({ data, width = 400, height = 300 }: CustomBarCha
         <XAxis dataKey="name" />
         <YAxis />
         <Tooltip />
-        <Bar dataKey="value" fill="#8b5cf6" />
+        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
       </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
+export function CustomLineChart({ data, height = 300, color = '#10b981' }: CustomLineChartProps) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ fill: color }} />
+      </LineChart>
     </ResponsiveContainer>
   )
 }

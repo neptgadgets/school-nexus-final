@@ -16,7 +16,15 @@ import {
   School,
   LogOut,
   Menu,
-  X
+  X,
+  CheckSquare,
+  Clock,
+  Library,
+  Bus,
+  MessageSquare,
+  BarChart3,
+  User,
+  Bell
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -47,6 +55,16 @@ const menuItems = [
     icon: BookOpen,
   },
   {
+    title: 'Attendance',
+    href: '/dashboard/attendance',
+    icon: CheckSquare,
+  },
+  {
+    title: 'Timetable',
+    href: '/dashboard/timetable',
+    icon: Clock,
+  },
+  {
     title: 'Terms',
     href: '/dashboard/terms',
     icon: Calendar,
@@ -60,6 +78,36 @@ const menuItems = [
     title: 'Fees Collection',
     href: '/dashboard/fees',
     icon: DollarSign,
+  },
+  {
+    title: 'Library',
+    href: '/dashboard/library',
+    icon: Library,
+  },
+  {
+    title: 'Transport',
+    href: '/dashboard/transport',
+    icon: Bus,
+  },
+  {
+    title: 'Communication',
+    href: '/dashboard/communication',
+    icon: MessageSquare,
+  },
+  {
+    title: 'Reports',
+    href: '/dashboard/reports',
+    icon: BarChart3,
+  },
+  {
+    title: 'Profile',
+    href: '/dashboard/profile',
+    icon: User,
+  },
+  {
+    title: 'Notifications',
+    href: '/dashboard/notifications',
+    icon: Bell,
   },
   {
     title: 'Settings',
@@ -119,7 +167,7 @@ export function Sidebar() {
               <School className="w-8 h-8 text-white mr-3" />
               <div>
                 <h1 className="text-xl font-bold text-white">SchoolNexus</h1>
-                <p className="text-purple-200 text-sm">Management System</p>
+                <p className="text-purple-200 text-sm">School Admin</p>
               </div>
             </div>
           </div>

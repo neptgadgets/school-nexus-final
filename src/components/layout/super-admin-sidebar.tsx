@@ -14,7 +14,13 @@ import {
   LogOut,
   Menu,
   X,
-  Crown
+  Crown,
+  DollarSign,
+  BarChart3,
+  HeadphonesIcon,
+  Database,
+  Shield,
+  Archive
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -40,9 +46,39 @@ const menuItems = [
     icon: CreditCard,
   },
   {
+    title: 'Billing',
+    href: '/super-admin/billing',
+    icon: DollarSign,
+  },
+  {
     title: 'Reports',
     href: '/super-admin/reports',
     icon: FileBarChart,
+  },
+  {
+    title: 'Analytics',
+    href: '/super-admin/analytics',
+    icon: BarChart3,
+  },
+  {
+    title: 'Support',
+    href: '/super-admin/support',
+    icon: HeadphonesIcon,
+  },
+  {
+    title: 'System Logs',
+    href: '/super-admin/logs',
+    icon: Database,
+  },
+  {
+    title: 'Backup & Restore',
+    href: '/super-admin/backup',
+    icon: Archive,
+  },
+  {
+    title: 'Security',
+    href: '/super-admin/security',
+    icon: Shield,
   },
   {
     title: 'Settings',
