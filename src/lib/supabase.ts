@@ -3,16 +3,36 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Environment variables with fallbacks for demo
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://demo.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'demo-anon-key'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+// Check if we have real Supabase credentials
+const hasRealSupabase = supabaseUrl !== 'https://demo.supabase.co' && 
+                       supabaseAnonKey !== 'demo-anon-key' &&
+                       supabaseUrl.includes('supabase.co')
 
 // Client-side Supabase client
 export const createSupabaseClient = () => {
+  if (!hasRealSupabase) {
+    // Return a mock client for demo purposes
+    return {
+      auth: {
+        signInWithPassword: async () => ({ data: null, error: { message: 'Demo mode - use demo credentials' } }),
+        signOut: async () => ({ error: null }),
+        getSession: async () => ({ data: { session: null }, error: null }),
+        getUser: async () => ({ data: { user: null }, error: null })
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: null, error: null })
+          })
+        })
+      })
+    } as any
+  }
+
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
@@ -24,6 +44,23 @@ export const createSupabaseClient = () => {
 
 // Server-side Supabase client for Server Components
 export const createServerSupabaseClient = () => {
+  if (!hasRealSupabase) {
+    // Return a mock client for demo purposes
+    return {
+      auth: {
+        getSession: async () => ({ data: { session: null }, error: null }),
+        getUser: async () => ({ data: { user: null }, error: null })
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: null, error: null })
+          })
+        })
+      })
+    } as any
+  }
+
   const cookieStore = cookies()
   
   return createServerClient(
@@ -59,6 +96,31 @@ export const createServerSupabaseClient = () => {
 
 // Middleware Supabase client
 export const createMiddlewareSupabaseClient = (request: NextRequest) => {
+  if (!hasRealSupabase) {
+    // Return mock for demo
+    const response = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
+    
+    return { 
+      supabase: {
+        auth: {
+          getSession: async () => ({ data: { session: null }, error: null })
+        },
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              single: async () => ({ data: null, error: null })
+            })
+          })
+        })
+      } as any, 
+      response 
+    }
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -116,6 +178,10 @@ export const createMiddlewareSupabaseClient = (request: NextRequest) => {
 
 // Auth helper functions
 export async function getUser() {
+  if (!hasRealSupabase) {
+    return null
+  }
+
   const supabase = createServerSupabaseClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   
@@ -128,6 +194,10 @@ export async function getUser() {
 }
 
 export async function getSession() {
+  if (!hasRealSupabase) {
+    return null
+  }
+
   const supabase = createServerSupabaseClient()
   const { data: { session }, error } = await supabase.auth.getSession()
   
@@ -141,6 +211,10 @@ export async function getSession() {
 
 // Get user role and school information
 export async function getUserRole() {
+  if (!hasRealSupabase) {
+    return null
+  }
+
   const supabase = createServerSupabaseClient()
   const user = await getUser()
   
@@ -389,4 +463,14 @@ export type Database = {
       }
     }
   }
+}
+
+// Utility to check if running in demo mode
+export const isDemoMode = () => !hasRealSupabase
+
+// Export the configuration status
+export const supabaseConfig = {
+  hasRealSupabase,
+  supabaseUrl,
+  isDemoMode: !hasRealSupabase
 }

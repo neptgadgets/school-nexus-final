@@ -18,7 +18,7 @@ import {
   DollarSign,
   Download
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase-client'
 import { CustomPieChart, CustomBarChart } from '@/components/ui/chart'
 
 interface StudentStats {
