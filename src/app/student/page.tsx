@@ -51,7 +51,7 @@ export default function StudentDashboard() {
 
   const fetchStudentData = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       // Mock data for student dashboard

@@ -20,7 +20,14 @@ import {
   Activity
 } from 'lucide-react'
 import { getData, getCurrentUser } from '@/lib/api'
-import { formatCurrency } from '@/lib/utils'
+
+// Utility function for currency formatting
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount)
+}
 
 interface SystemStats {
   totalSchools: number
@@ -52,29 +59,25 @@ export default function ReportsPage() {
 
   const fetchSystemStats = async () => {
     try {
-      // Fetch schools data
-      const { data: schools } = await supabase.from('schools').select('*')
+      setIsLoading(true)
+      const { data: reportData, error } = await getData('/super-admin/reports?type=overview')
       
-      // Fetch students data (aggregate from all schools)
-      const { data: students } = await supabase.from('students').select('id').eq('status', 'active')
-      
-      // Fetch teachers data (aggregate from all schools)
-      const { data: teachers } = await supabase.from('teachers').select('id').eq('status', 'active')
+      if (error) {
+        console.error('Error fetching system stats:', error)
+        return
+      }
 
-      const totalSchools = schools?.length || 0
-      const activeSubscriptions = schools?.filter(s => s.subscription_status === 'active').length || 0
-      const trialSubscriptions = schools?.filter(s => s.subscription_status === 'trial').length || 0
-      const expiredSubscriptions = schools?.filter(s => s.subscription_status === 'expired').length || 0
-
-      setStats({
-        totalSchools,
-        totalStudents: students?.length || 0,
-        totalTeachers: teachers?.length || 0,
-        totalRevenue: activeSubscriptions * 500000, // Mock revenue calculation
-        activeSubscriptions,
-        trialSubscriptions,
-        expiredSubscriptions
-      })
+      if (reportData?.overview) {
+        setStats({
+          totalSchools: parseInt(reportData.overview.active_schools) || 0,
+          totalStudents: parseInt(reportData.overview.total_students) || 0,
+          totalTeachers: parseInt(reportData.overview.total_teachers) || 0,
+          totalRevenue: parseInt(reportData.overview.active_schools) * 500000, // Mock revenue calculation
+          activeSubscriptions: parseInt(reportData.overview.active_schools) || 0,
+          trialSubscriptions: 0, // This would need additional data
+          expiredSubscriptions: parseInt(reportData.overview.inactive_schools) || 0
+        })
+      }
     } catch (error) {
       console.error('Error fetching system stats:', error)
     } finally {

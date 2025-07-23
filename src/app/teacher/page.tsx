@@ -50,7 +50,7 @@ export default function TeacherDashboard() {
 
   const fetchTeacherData = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       // Mock data for teacher dashboard

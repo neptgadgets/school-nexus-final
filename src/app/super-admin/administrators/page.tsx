@@ -31,7 +31,11 @@ import {
   User
 } from 'lucide-react'
 import { getData, getCurrentUser } from '@/lib/api'
-import { getStatusColor, formatDate, exportToCSV } from '@/lib/utils'
+
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface Administrator {
   id: string
@@ -42,12 +46,9 @@ interface Administrator {
   last_name: string
   email: string
   phone?: string
-  avatar_url?: string
-  is_active: boolean
+  school_name?: string
+  is_active?: boolean
   created_at: string
-  schools?: {
-    name: string
-  }
 }
 
 export default function AdministratorsPage() {
@@ -69,22 +70,15 @@ export default function AdministratorsPage() {
 
   const fetchAdministrators = async () => {
     try {
-      const { data, error } = await supabase
-        .from('administrators')
-        .select(`
-          *,
-          schools (
-            name
-          )
-        `)
-        .order('created_at', { ascending: false })
+      setIsLoading(true)
+      const { data, error } = await getData('/super-admin/administrators?limit=100')
 
       if (error) {
         console.error('Error fetching administrators:', error)
         return
       }
 
-      setAdministrators(data || [])
+      setAdministrators(data?.administrators || [])
     } catch (error) {
       console.error('Error fetching administrators:', error)
     } finally {

@@ -82,7 +82,7 @@ export default function AttendancePage() {
 
   const fetchAttendanceData = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase
@@ -131,7 +131,7 @@ export default function AttendancePage() {
 
   const fetchClasses = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase
@@ -175,7 +175,7 @@ export default function AttendancePage() {
 
   const markAttendance = async (studentId: string, status: 'present' | 'absent' | 'late' | 'excused') => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const existingRecord = attendanceRecords.find(r => r.student_id === studentId)

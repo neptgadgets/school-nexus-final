@@ -34,7 +34,11 @@ import {
   Clock
 } from 'lucide-react'
 import { getData, getCurrentUser } from '@/lib/api'
-import { getStatusColor, formatDate, exportToCSV } from '@/lib/utils'
+
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface SchoolData {
   id: string
@@ -42,10 +46,18 @@ interface SchoolData {
   address: string
   phone: string
   email: string
-  logo_url?: string
-  is_active: boolean
-  subscription_status: 'active' | 'expired' | 'trial'
-  subscription_end_date?: string
+  website?: string
+  principal_name?: string
+  principal_email?: string
+  principal_phone?: string
+  subscription_plan?: string
+  max_students?: number
+  max_teachers?: number
+  total_students?: number
+  total_teachers?: number
+  total_classes?: number
+  total_admins?: number
+  status: 'active' | 'inactive' | 'suspended'
   created_at: string
 }
 
@@ -68,17 +80,15 @@ export default function SchoolsPage() {
 
   const fetchSchools = async () => {
     try {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('*')
-        .order('created_at', { ascending: false })
-
+      setIsLoading(true)
+      const { data, error } = await getData('/super-admin/schools?limit=100')
+      
       if (error) {
         console.error('Error fetching schools:', error)
         return
       }
 
-      setSchools(data || [])
+      setSchools(data?.schools || [])
     } catch (error) {
       console.error('Error fetching schools:', error)
     } finally {
@@ -98,11 +108,7 @@ export default function SchoolsPage() {
     }
 
     if (statusFilter !== 'all') {
-      if (statusFilter === 'active') {
-        filtered = filtered.filter(school => school.is_active)
-      } else if (statusFilter === 'inactive') {
-        filtered = filtered.filter(school => !school.is_active)
-      }
+      filtered = filtered.filter(school => school.status === statusFilter)
     }
 
     if (subscriptionFilter !== 'all') {

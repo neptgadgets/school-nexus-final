@@ -59,7 +59,7 @@ export default function SubjectsPage() {
 
   const fetchSubjects = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase

@@ -60,7 +60,7 @@ export default function TermsPage() {
 
   const fetchTerms = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase

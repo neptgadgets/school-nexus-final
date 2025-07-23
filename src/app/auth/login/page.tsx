@@ -50,7 +50,7 @@ const demoAccounts = [
     password: 'demo123',
     icon: Heart,
     color: 'from-pink-500 to-rose-600',
-    description: 'Monitor your child'\''s academic journey',
+    description: "Monitor your child's academic journey",
     redirectPath: '/parent'
   }
 ]

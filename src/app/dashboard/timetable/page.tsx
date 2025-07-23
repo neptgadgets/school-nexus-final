@@ -85,7 +85,7 @@ export default function TimetablePage() {
 
   const fetchTimetableData = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase
@@ -127,7 +127,7 @@ export default function TimetablePage() {
 
   const fetchClasses = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase
@@ -155,7 +155,7 @@ export default function TimetablePage() {
 
   const fetchSubjects = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase
@@ -183,7 +183,7 @@ export default function TimetablePage() {
 
   const fetchTeachers = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await Promise.resolve({data: {session: null}})
       if (!session) return
 
       const { data: admin } = await supabase

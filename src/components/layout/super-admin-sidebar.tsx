@@ -97,7 +97,7 @@ export function SuperAdminSidebar() {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      await supabase.auth.signOut()
+      await logout()
       router.push('/auth/login')
     } catch (error) {
       console.error('Logout error:', error)

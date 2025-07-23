@@ -50,74 +50,29 @@ export default function SuperAdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch schools data
-      const { data: schools, error: schoolsError } = await supabase
-        .from('schools')
-        .select('*')
-
-      if (schoolsError) {
-        console.error('Error fetching schools:', schoolsError)
-        return
-      }
-
-      // Fetch administrators data
-      const { data: administrators, error: adminsError } = await supabase
-        .from('administrators')
-        .select('*')
-
-      if (adminsError) {
-        console.error('Error fetching administrators:', adminsError)
-        return
-      }
-
-      const totalSchools = schools?.length || 0
-      const activeSchools = schools?.filter(s => s.is_active).length || 0
-      const totalAdministrators = administrators?.length || 0
+      setIsLoading(true)
       
-      // Calculate expiring subscriptions (within 30 days)
-      const thirtyDaysFromNow = new Date()
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+      // Fetch analytics data
+      const { data: analyticsData, error: analyticsError } = await getData('/super-admin/analytics')
+      if (!analyticsError && analyticsData) {
+        setStats({
+          totalSchools: parseInt(analyticsData.stats.total_schools) || 0,
+          administrators: parseInt(analyticsData.stats.total_administrators) || 0,
+          expiringSubscriptions: 0, // This would need a separate query
+          systemNotifications: 0, // This would need a separate query
+          activeSchools: parseInt(analyticsData.stats.total_schools) || 0
+        })
+        setRecentActivities(analyticsData.recentActivity || [])
+      }
       
-      const expiringSubscriptions = schools?.filter(school => {
-        if (!school.subscription_end_date) return false
-        return new Date(school.subscription_end_date) <= thirtyDaysFromNow
-      }).length || 0
-
-      setStats({
-        totalSchools,
-        administrators: totalAdministrators,
-        expiringSubscriptions,
-        systemNotifications: 3, // Mock data
-        activeSchools
-      })
-
-      // Mock recent activities
-      setRecentActivities([
-        {
-          id: '1',
-          school_name: 'Greenwood High School',
-          activity: 'was added to the system',
-          date: '25/05/2025'
-        },
-        {
-          id: '2',
-          school_name: 'Creamland NPS',
-          activity: 'was added to the system',
-          date: '25/05/2025'
-        },
-        {
-          id: '3',
-          school_name: 'Riverside Academy',
-          activity: 'was added to the system',
-          date: '25/05/2025'
-        }
-      ])
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
       setIsLoading(false)
     }
   }
+
+
 
   const metricCards = [
     {
