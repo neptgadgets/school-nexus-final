@@ -24,7 +24,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 
 interface Notification {
   id: string
@@ -56,7 +56,7 @@ export default function NotificationsPage() {
     target_audience: 'all' as const,
     scheduled_date: ''
   })
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchNotifications()

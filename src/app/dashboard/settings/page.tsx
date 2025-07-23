@@ -22,7 +22,7 @@ import {
   Globe,
   Smartphone
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 
 interface SchoolSettings {
   id: string
@@ -38,7 +38,7 @@ export default function SettingsPage() {
   const [schoolSettings, setSchoolSettings] = useState<SchoolSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchSchoolSettings()

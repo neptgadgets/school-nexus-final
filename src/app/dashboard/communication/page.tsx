@@ -25,7 +25,7 @@ import {
   Trash2,
   Eye
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 
 interface Message {
@@ -62,7 +62,7 @@ export default function CommunicationPage() {
   const [filterType, setFilterType] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
   const [showComposeModal, setShowComposeModal] = useState(false)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchCommunicationData()

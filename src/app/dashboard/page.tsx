@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getCurrentUser } from '@/lib/api'
+import { getCurrentUser, getData } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Users, 
@@ -20,23 +20,42 @@ import { CustomBarChart, CustomLineChart } from '@/components/ui/chart'
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [dashboardStats, setDashboardStats] = useState<any>(null)
+  const [recentStudents, setRecentStudents] = useState<any[]>([])
+  const [recentGrades, setRecentGrades] = useState<any[]>([])
 
   useEffect(() => {
     const currentUser = getCurrentUser()
     setUser(currentUser)
-    setIsLoading(false)
+    loadDashboardData()
   }, [])
 
-  // Mock data for dashboard
-  const dashboardStats = {
-    totalStudents: 1247,
-    totalTeachers: 68,
-    totalClasses: 42,
-    totalRevenue: 156780,
-    attendanceRate: 94.2,
-    newEnrollments: 23,
-    pendingFees: 8,
-    upcomingExams: 5
+  const loadDashboardData = async () => {
+    setIsLoading(true)
+    try {
+      // Load dashboard statistics
+      const { data: stats, error: statsError } = await getData('/dashboard/stats')
+      if (!statsError && stats) {
+        setDashboardStats(stats.stats)
+      }
+
+      // Load recent students
+      const { data: studentsData, error: studentsError } = await getData('/students?limit=5')
+      if (!studentsError && studentsData) {
+        setRecentStudents(studentsData.students || [])
+      }
+
+      // Load recent grades for analytics
+      const { data: gradesData, error: gradesError } = await getData('/grades?limit=10')
+      if (!gradesError && gradesData) {
+        setRecentGrades(gradesData.grades || [])
+      }
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const monthlyData = [
@@ -57,17 +76,26 @@ export default function DashboardPage() {
     { day: 'Sat', rate: 89 }
   ]
 
+  // Generate recent activities from real data
   const recentActivities = [
-    { type: 'enrollment', message: 'New student enrolled in Grade 10A', time: '2 hours ago', icon: Users },
-    { type: 'payment', message: 'Fee payment received from John Smith', time: '4 hours ago', icon: DollarSign },
-    { type: 'exam', message: 'Mathematics exam scheduled for Grade 12', time: '6 hours ago', icon: FileText },
-    { type: 'notification', message: 'Parent-teacher meeting reminder sent', time: '8 hours ago', icon: Bell }
+    ...recentStudents.slice(0, 2).map(student => ({
+      type: 'enrollment',
+      message: `New student enrolled: ${student.first_name} ${student.last_name}`,
+      time: new Date(student.created_at).toLocaleDateString(),
+      icon: Users
+    })),
+    ...recentGrades.slice(0, 2).map(grade => ({
+      type: 'grade',
+      message: `Grade recorded: ${grade.score}/${grade.assignment_max_score} for ${grade.assignment_title}`,
+      time: new Date(grade.created_at).toLocaleDateString(),
+      icon: FileText
+    }))
   ]
 
   const pendingTasks = [
-    { task: 'Review pending fee waivers', priority: 'high', count: 3 },
-    { task: 'Approve new teacher applications', priority: 'medium', count: 2 },
-    { task: 'Update exam schedules', priority: 'low', count: 1 },
+    { task: 'Review student applications', priority: 'high', count: recentStudents.length },
+    { task: 'Update grade records', priority: 'medium', count: recentGrades.filter(g => !g.feedback).length },
+    { task: 'Schedule parent meetings', priority: 'low', count: 3 },
     { task: 'Generate monthly reports', priority: 'medium', count: 1 }
   ]
 
@@ -107,10 +135,12 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalStudents.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {dashboardStats?.total_students ? parseInt(dashboardStats.total_students).toLocaleString() : '0'}
+                </p>
                 <p className="text-xs text-green-600 flex items-center mt-1">
                   <TrendingUp className="w-3 h-3 mr-1" />
-                  +{dashboardStats.newEnrollments} this month
+                  Active enrollment
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -125,7 +155,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalTeachers}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {dashboardStats?.total_teachers ? parseInt(dashboardStats.total_teachers) : '0'}
+                </p>
                 <p className="text-xs text-blue-600 flex items-center mt-1">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   All active
@@ -143,7 +175,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Classes</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalClasses}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {dashboardStats?.total_classes ? parseInt(dashboardStats.total_classes) : '0'}
+                </p>
                 <p className="text-xs text-purple-600 flex items-center mt-1">
                   <BookOpen className="w-3 h-3 mr-1" />
                   Across all grades
@@ -160,11 +194,13 @@ export default function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${dashboardStats.totalRevenue.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {dashboardStats?.attendance_rate ? `${parseFloat(dashboardStats.attendance_rate).toFixed(1)}%` : '0%'}
+                </p>
                 <p className="text-xs text-orange-600 flex items-center mt-1">
                   <DollarSign className="w-3 h-3 mr-1" />
-                  {dashboardStats.pendingFees} pending
+                  Today's rate
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">

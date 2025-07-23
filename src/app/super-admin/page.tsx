@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Activity
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData, getCurrentUser } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 
 interface SuperAdminStats {
@@ -42,7 +42,7 @@ export default function SuperAdminDashboard() {
   })
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchDashboardData()

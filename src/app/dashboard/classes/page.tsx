@@ -28,7 +28,7 @@ import {
   Calendar,
   GraduationCap
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate, exportToCSV } from '@/lib/utils'
 
 interface Class {
@@ -53,7 +53,7 @@ export default function ClassesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchClasses()

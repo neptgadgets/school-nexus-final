@@ -20,7 +20,7 @@ import {
   TrendingUp,
   AlertCircle
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 import { CustomPieChart, CustomBarChart } from '@/components/ui/chart'
 
 interface Child {
@@ -69,7 +69,7 @@ export default function ParentChildrenPage() {
   const [children, setChildren] = useState<Child[]>([])
   const [selectedChild, setSelectedChild] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchChildren()

@@ -29,7 +29,7 @@ import {
   CheckCircle,
   BarChart3
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate, exportToCSV } from '@/lib/utils'
 
 interface Book {
@@ -64,7 +64,7 @@ export default function LibraryPage() {
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchLibraryData()

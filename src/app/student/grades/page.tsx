@@ -17,7 +17,7 @@ import {
   Filter,
   Search
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 import { CustomBarChart, CustomLineChart } from '@/components/ui/chart'
 
 interface Grade {
@@ -50,7 +50,7 @@ export default function StudentGradesPage() {
   const [subjectFilter, setSubjectFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchGrades()

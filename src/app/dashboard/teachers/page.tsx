@@ -30,21 +30,29 @@ import {
   Award,
   Users
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
-import { getStatusColor, formatDate, exportToCSV } from '@/lib/utils'
+import { getData } from '@/lib/api'
+
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface Teacher {
   id: string
-  employee_id: string
+  employee_id?: string
   first_name: string
   last_name: string
   email: string
-  phone: string
+  phone?: string
   qualification?: string
   experience_years?: number
-  joining_date: string
-  status: 'active' | 'inactive' | 'suspended'
-  gender: 'male' | 'female' | 'other'
+  joining_date?: string
+  subject_name?: string
+  school_name?: string
+  classes_count?: number
+  students_count?: number
+  status?: 'active' | 'inactive' | 'suspended'
+  gender?: 'male' | 'female' | 'other'
   created_at: string
 }
 
@@ -54,7 +62,6 @@ export default function TeachersPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     fetchTeachers()
@@ -66,29 +73,15 @@ export default function TeachersPage() {
 
   const fetchTeachers = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      const { data: admin } = await supabase
-        .from('administrators')
-        .select('school_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (!admin?.school_id) return
-
-      const { data, error } = await supabase
-        .from('teachers')
-        .select('*')
-        .eq('school_id', admin.school_id)
-        .order('created_at', { ascending: false })
-
+      setIsLoading(true)
+      const { data, error } = await getData('/teachers?limit=100')
+      
       if (error) {
         console.error('Error fetching teachers:', error)
         return
       }
 
-      setTeachers(data || [])
+      setTeachers(data?.teachers || [])
     } catch (error) {
       console.error('Error fetching teachers:', error)
     } finally {

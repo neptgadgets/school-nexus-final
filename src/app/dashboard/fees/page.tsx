@@ -26,7 +26,7 @@ import {
   Search,
   Filter
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatCurrency, formatDate, getStatusColor, exportToCSV } from '@/lib/utils'
 
 interface FeeRecord {
@@ -71,7 +71,7 @@ export default function FeesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [activeTab, setActiveTab] = useState('collect')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchFeeRecords()

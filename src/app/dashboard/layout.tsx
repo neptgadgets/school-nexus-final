@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
-import { getUserRole } from '@/lib/supabase'
+import { getCurrentUser } from '@/lib/api'
 
 export default async function DashboardLayout({
   children,

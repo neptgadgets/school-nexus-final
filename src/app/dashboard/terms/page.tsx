@@ -28,7 +28,7 @@ import {
   AlertCircle,
   PlayCircle
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate, exportToCSV } from '@/lib/utils'
 
 interface AcademicTerm {
@@ -48,7 +48,7 @@ export default function TermsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchTerms()

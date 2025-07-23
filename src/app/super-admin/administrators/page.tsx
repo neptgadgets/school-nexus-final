@@ -30,7 +30,7 @@ import {
   Crown,
   User
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData, getCurrentUser } from '@/lib/api'
 import { getStatusColor, formatDate, exportToCSV } from '@/lib/utils'
 
 interface Administrator {
@@ -57,7 +57,7 @@ export default function AdministratorsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchAdministrators()

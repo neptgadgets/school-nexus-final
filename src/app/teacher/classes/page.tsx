@@ -18,7 +18,7 @@ import {
   FileText,
   CheckSquare
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 
 interface ClassData {
   id: string
@@ -40,7 +40,7 @@ export default function TeacherClassesPage() {
   const [classes, setClasses] = useState<ClassData[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchClasses()

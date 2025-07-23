@@ -33,7 +33,7 @@ import {
   AlertTriangle,
   Clock
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData, getCurrentUser } from '@/lib/api'
 import { getStatusColor, formatDate, exportToCSV } from '@/lib/utils'
 
 interface SchoolData {
@@ -56,7 +56,7 @@ export default function SchoolsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [subscriptionFilter, setSubscriptionFilter] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchSchools()

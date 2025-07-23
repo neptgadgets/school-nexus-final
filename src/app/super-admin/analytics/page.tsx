@@ -20,7 +20,7 @@ import {
   Smartphone,
   Clock
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 import { CustomBarChart, CustomLineChart, CustomPieChart } from '@/components/ui/chart'
 
 interface AnalyticsData {
@@ -47,7 +47,7 @@ export default function SuperAdminAnalyticsPage() {
   })
   const [timeRange, setTimeRange] = useState('30d')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchAnalyticsData()

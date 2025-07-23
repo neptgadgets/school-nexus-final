@@ -18,7 +18,7 @@ import {
   UserX,
   Clock
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 
 interface Student {
   id: string
@@ -42,7 +42,7 @@ export default function TeacherStudentsPage() {
   const [classFilter, setClassFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchStudents()

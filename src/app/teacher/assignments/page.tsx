@@ -21,7 +21,7 @@ import {
   Upload,
   Download
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 
 interface Assignment {
   id: string
@@ -53,7 +53,7 @@ export default function TeacherAssignmentsPage() {
     total_points: 100,
     type: 'homework' as const
   })
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchAssignments()

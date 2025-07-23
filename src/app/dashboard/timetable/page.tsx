@@ -17,7 +17,7 @@ import {
   Copy,
   Shuffle
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 
 interface TimetableSlot {
@@ -51,7 +51,7 @@ export default function TimetablePage() {
   const [subjects, setSubjects] = useState<any[]>([])
   const [teachers, setTeachers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   const timeSlots = [
     { start: '08:00', end: '08:45', label: 'Period 1' },

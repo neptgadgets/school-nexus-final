@@ -18,7 +18,7 @@ import {
   Bell,
   User
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 import { CustomPieChart, CustomBarChart } from '@/components/ui/chart'
 
 interface TeacherStats {
@@ -42,7 +42,7 @@ export default function TeacherDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [upcomingSchedule, setUpcomingSchedule] = useState<any[]>([])
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchTeacherData()

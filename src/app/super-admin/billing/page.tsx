@@ -27,7 +27,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData, getCurrentUser } from '@/lib/api'
 import { formatDate, exportToCSV } from '@/lib/utils'
 import { CustomLineChart, CustomBarChart } from '@/components/ui/chart'
 
@@ -67,7 +67,7 @@ export default function BillingPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchBillingData()

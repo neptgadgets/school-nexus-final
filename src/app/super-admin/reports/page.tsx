@@ -19,7 +19,7 @@ import {
   PieChart,
   Activity
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData, getCurrentUser } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 
 interface SystemStats {
@@ -44,7 +44,7 @@ export default function ReportsPage() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState('monthly')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchSystemStats()

@@ -27,7 +27,7 @@ import {
   Search,
   Filter
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate, getStatusColor, exportToCSV } from '@/lib/utils'
 
 interface Exam {
@@ -59,7 +59,7 @@ export default function ExamsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [activeTab, setActiveTab] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchExams()

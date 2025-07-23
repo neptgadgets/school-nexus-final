@@ -18,7 +18,7 @@ import {
   DollarSign,
   Download
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 import { CustomPieChart, CustomBarChart } from '@/components/ui/chart'
 
 interface StudentStats {
@@ -43,7 +43,7 @@ export default function StudentDashboard() {
   const [recentGrades, setRecentGrades] = useState<any[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [todaySchedule, setTodaySchedule] = useState<any[]>([])
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchStudentData()

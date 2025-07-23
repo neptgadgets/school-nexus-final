@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { SuperAdminSidebar } from '@/components/layout/super-admin-sidebar'
-import { getUserRole } from '@/lib/supabase'
+import { getCurrentUser } from '@/lib/api'
 
 export default async function SuperAdminLayout({
   children,

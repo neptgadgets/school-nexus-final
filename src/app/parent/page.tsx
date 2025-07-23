@@ -21,7 +21,7 @@ import {
   Mail,
   AlertTriangle
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase-client'
+import { getData, getCurrentUser } from '@/lib/api'
 import { CustomPieChart, CustomBarChart } from '@/components/ui/chart'
 
 interface Child {
@@ -57,7 +57,7 @@ export default function ParentDashboard() {
   const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchParentData()

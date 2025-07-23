@@ -30,7 +30,7 @@ import {
   School,
   Zap
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData, getCurrentUser } from '@/lib/api'
 import { formatDate, formatCurrency, exportToCSV } from '@/lib/utils'
 
 interface SchoolSubscription {
@@ -48,7 +48,7 @@ export default function SubscriptionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchSubscriptions()

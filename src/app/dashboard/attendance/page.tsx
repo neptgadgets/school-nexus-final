@@ -29,8 +29,12 @@ import {
   TrendingUp,
   FileText
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
-import { formatDate, exportToCSV } from '@/lib/utils'
+import { getData } from '@/lib/api'
+
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface AttendanceRecord {
   id: string
@@ -40,14 +44,10 @@ interface AttendanceRecord {
   time_in?: string
   time_out?: string
   notes?: string
-  students: {
-    first_name: string
-    last_name: string
-    student_id: string
-    classes: {
-      name: string
-    }
-  }
+  student_first_name?: string
+  student_last_name?: string
+  class_name?: string
+  class_level?: string
 }
 
 interface AttendanceStats {
@@ -73,7 +73,7 @@ export default function AttendancePage() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [classes, setClasses] = useState<any[]>([])
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchAttendanceData()

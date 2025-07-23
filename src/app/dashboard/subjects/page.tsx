@@ -28,7 +28,7 @@ import {
   Award,
   Calendar
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
+import { getData } from '@/lib/api'
 import { formatDate, exportToCSV } from '@/lib/utils'
 
 interface Subject {
@@ -47,7 +47,7 @@ export default function SubjectsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const supabase = createSupabaseClient()
+  
 
   useEffect(() => {
     fetchSubjects()

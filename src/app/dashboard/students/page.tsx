@@ -25,8 +25,12 @@ import {
   Search,
   Filter
 } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
-import { getStatusColor, formatDate, exportToCSV } from '@/lib/utils'
+import { getData } from '@/lib/api'
+
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface Student {
   id: string
@@ -38,12 +42,14 @@ interface Student {
   parent_phone: string
   parent_email?: string
   class_id: string
-  status: 'active' | 'graduated' | 'transferred' | 'suspended'
+  class_name?: string
+  class_level?: string
+  school_name?: string
+  total_assignments?: number
+  average_grade?: number
+  status?: 'active' | 'graduated' | 'transferred' | 'suspended'
   avatar_url?: string
   created_at: string
-  classes?: {
-    name: string
-  }
 }
 
 export default function StudentsPage() {
@@ -53,7 +59,6 @@ export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [classFilter, setClassFilter] = useState('all')
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     fetchStudents()
@@ -65,34 +70,15 @@ export default function StudentsPage() {
 
   const fetchStudents = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      const { data: admin } = await supabase
-        .from('administrators')
-        .select('school_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (!admin?.school_id) return
-
-      const { data, error } = await supabase
-        .from('students')
-        .select(`
-          *,
-          classes (
-            name
-          )
-        `)
-        .eq('school_id', admin.school_id)
-        .order('created_at', { ascending: false })
-
+      setIsLoading(true)
+      const { data, error } = await getData('/students?limit=100')
+      
       if (error) {
         console.error('Error fetching students:', error)
         return
       }
 
-      setStudents(data || [])
+      setStudents(data?.students || [])
     } catch (error) {
       console.error('Error fetching students:', error)
     } finally {
@@ -133,12 +119,24 @@ export default function StudentsPage() {
       'Email': student.email || '',
       'Phone': student.phone || '',
       'Parent Phone': student.parent_phone,
-      'Class': student.classes?.name || '',
-      'Status': student.status,
+      'Class': student.class_name || '',
+      'Status': student.status || 'active',
       'Registration Date': formatDate(student.created_at),
     }))
     
-    exportToCSV(exportData, 'students-list')
+    // Simple CSV export without external library
+    const csvContent = [
+      Object.keys(exportData[0]).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'students-list.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -189,7 +187,7 @@ export default function StudentsPage() {
                 <div>
                   <p className="text-sm text-gray-600">Active</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {students.filter(s => s.status === 'active').length}
+                    {students.filter(s => s.status === 'active' || !s.status).length}
                   </p>
                 </div>
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -201,9 +199,11 @@ export default function StudentsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Graduated</p>
+                  <p className="text-sm text-gray-600">Average Grade</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    {students.filter(s => s.status === 'graduated').length}
+                    {students.length > 0 ? 
+                      (students.reduce((acc, s) => acc + (parseFloat(s.average_grade?.toString() || '0') || 0), 0) / students.length).toFixed(1)
+                      : '0'}
                   </p>
                 </div>
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -215,9 +215,9 @@ export default function StudentsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Transferred</p>
+                  <p className="text-sm text-gray-600">Total Assignments</p>
                   <p className="text-2xl font-bold text-orange-600">
-                    {students.filter(s => s.status === 'transferred').length}
+                    {students.reduce((acc, s) => acc + (parseInt(s.total_assignments?.toString() || '0') || 0), 0)}
                   </p>
                 </div>
                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
@@ -330,12 +330,17 @@ export default function StudentsPage() {
                         </TableCell>
                         <TableCell>
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                            {student.classes?.name || 'N/A'}
+                            {student.class_name || 'N/A'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(student.status)}`}>
-                            {student.status}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            (student.status || 'active') === 'active' ? 'bg-green-100 text-green-800' :
+                            student.status === 'graduated' ? 'bg-blue-100 text-blue-800' :
+                            student.status === 'transferred' ? 'bg-orange-100 text-orange-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {student.status || 'active'}
                           </span>
                         </TableCell>
                         <TableCell>

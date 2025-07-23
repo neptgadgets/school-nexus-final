@@ -20,7 +20,7 @@ import {
   Lock,
   Zap
 } from 'lucide-react'
-import { getSession, getUserRole } from '@/lib/supabase'
+import { getCurrentUser } from '@/lib/api'
 
 export default async function HomePage() {
   // Check if user is already authenticated
