@@ -1,33 +1,43 @@
 // Client-side API utility functions to replace Supabase client calls
+import { handleError, createNetworkError, createAuthError, logError } from './error-handler'
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
-  }
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-  
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  })
-  
-  if (response.status === 401) {
-    // Token expired or invalid, redirect to login
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth-token')
-      localStorage.removeItem('user')
-      window.location.href = '/auth/login'
+  try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string> || {}),
     }
-    return
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    })
+    
+    if (response.status === 401) {
+      // Token expired or invalid, redirect to login
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth-token')
+        localStorage.removeItem('user')
+        const error = createAuthError('Session expired. Please log in again.')
+        logError(handleError(error), 'fetchWithAuth')
+        window.location.href = '/auth/login'
+      }
+      return
+    }
+    
+    return response
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw createNetworkError('Network connection failed. Please check your internet connection.')
+    }
+    throw error
   }
-  
-  return response
 }
 
 export async function getData(endpoint: string) {
