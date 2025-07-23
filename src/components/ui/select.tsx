@@ -76,7 +76,7 @@ const SelectContent = ({ className, children, ...props }: SelectContentProps & a
       {React.Children.map(children, child => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child, { 
-            ...child.props, 
+            ...(child.props || {}), 
             onValueChange: props.onValueChange,
             setOpen: props.setOpen
           } as any)

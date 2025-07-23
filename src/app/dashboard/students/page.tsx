@@ -124,17 +124,17 @@ export default function StudentsPage() {
       'Registration Date': formatDate(student.created_at),
     }))
     
-    // Simple CSV export without external library
+    // Simple CSV export
     const csvContent = [
-      Object.keys(exportData[0]).join(','),
-      ...exportData.map(row => Object.values(row).join(','))
-    ].join('\n')
+      Object.keys(exportData[0] || {}).join(","),
+      ...exportData.map(row => Object.values(row).join(","))
+    ].join("\n")
     
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = document.createElement("a")
     a.href = url
-    a.download = 'students-list.csv'
+    a.download = "export.csv"
     a.click()
     window.URL.revokeObjectURL(url)
   }

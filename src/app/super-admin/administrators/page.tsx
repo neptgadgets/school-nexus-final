@@ -32,9 +32,20 @@ import {
 } from 'lucide-react'
 import { getData, getCurrentUser } from '@/lib/api'
 
-// Utility function for date formatting
+// Utility functions
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString()
+}
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'active':
+      return 'bg-green-100 text-green-800'
+    case 'inactive':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
 }
 
 interface Administrator {
@@ -94,7 +105,7 @@ export default function AdministratorsPage() {
         admin.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         admin.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         admin.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.schools?.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (admin.school_name || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
@@ -119,23 +130,22 @@ export default function AdministratorsPage() {
       'Email': admin.email,
       'Phone': admin.phone || '',
       'Role': admin.role,
-      'School': admin.schools?.name || 'N/A',
+      'School': admin.school_name || 'N/A',
       'Status': admin.is_active ? 'Active' : 'Inactive',
       'Created': formatDate(admin.created_at),
     }))
     
     // Simple CSV export
     const csvContent = [
-      Object.keys(exportData[0] || {}).join(','),
-      ...exportData.map(row => Object.values(row).join(','))
-    ].join('
-')
+      Object.keys(exportData[0] || {}).join(","),
+      ...exportData.map(row => Object.values(row).join(","))
+    ].join("\n")
     
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = document.createElement("a")
     a.href = url
-    a.download = 'export.csv'
+    a.download = "export.csv"
     a.click()
     window.URL.revokeObjectURL(url)
   }
@@ -355,10 +365,10 @@ export default function AdministratorsPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {admin.schools ? (
+                            {admin.school_name ? (
                               <div className="flex items-center space-x-1">
                                 <School className="w-3 h-3 text-gray-400" />
-                                <span className="text-sm">{admin.schools.name}</span>
+                                <span className="text-sm">{admin.school_name}</span>
                               </div>
                             ) : (
                               <span className="text-sm text-gray-500">All Schools</span>

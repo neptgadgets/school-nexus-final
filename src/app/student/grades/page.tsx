@@ -230,15 +230,15 @@ export default function StudentGradesPage() {
   ]
 
   const performanceTrendData = [
-    { name: 'Week 1', grade: 85 },
-    { name: 'Week 2', grade: 88 },
-    { name: 'Week 3', grade: 92 },
-    { name: 'Week 4', grade: 87 },
-    { name: 'Week 5', grade: 90 },
-    { name: 'Week 6', grade: 93 }
+    { name: 'Week 1', value: 85 },
+    { name: 'Week 2', value: 88 },
+    { name: 'Week 3', value: 92 },
+    { name: 'Week 4', value: 87 },
+    { name: 'Week 5', value: 90 },
+    { name: 'Week 6', value: 93 }
   ]
 
-  const uniqueSubjects = [...new Set(grades.map(g => g.subject))]
+  const uniqueSubjects = Array.from(new Set(grades.map(g => g.subject)))
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

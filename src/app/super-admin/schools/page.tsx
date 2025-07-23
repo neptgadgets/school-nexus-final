@@ -112,7 +112,7 @@ export default function SchoolsPage() {
     }
 
     if (subscriptionFilter !== 'all') {
-      filtered = filtered.filter(school => school.subscription_status === subscriptionFilter)
+      filtered = filtered.filter(school => (school.subscription_plan || 'basic') === subscriptionFilter)
     }
 
     setFilteredSchools(filtered)
@@ -124,51 +124,49 @@ export default function SchoolsPage() {
       'Email': school.email,
       'Phone': school.phone,
       'Address': school.address,
-      'Status': school.is_active ? 'Active' : 'Inactive',
-      'Subscription': school.subscription_status,
-      'Subscription End': school.subscription_end_date ? formatDate(school.subscription_end_date) : 'N/A',
+      'Status': school.status || 'Active',
+      'Subscription': school.subscription_plan || 'Basic',
       'Created': formatDate(school.created_at),
     }))
     
     // Simple CSV export
     const csvContent = [
-      Object.keys(exportData[0] || {}).join(','),
-      ...exportData.map(row => Object.values(row).join(','))
-    ].join('
-')
+      Object.keys(exportData[0] || {}).join(","),
+      ...exportData.map(row => Object.values(row).join(","))
+    ].join("\n")
     
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = document.createElement("a")
     a.href = url
-    a.download = 'export.csv'
+    a.download = "export.csv"
     a.click()
     window.URL.revokeObjectURL(url)
   }
 
   const getSchoolStats = () => {
     const totalSchools = schools.length
-    const activeSchools = schools.filter(s => s.is_active).length
-    const trialSchools = schools.filter(s => s.subscription_status === 'trial').length
-    const expiredSchools = schools.filter(s => s.subscription_status === 'expired').length
+    const activeSchools = schools.filter(s => s.status === 'active').length
+    const trialSchools = schools.filter(s => s.subscription_plan === 'basic').length
+    const premiumSchools = schools.filter(s => s.subscription_plan === 'premium').length
 
-    return { totalSchools, activeSchools, trialSchools, expiredSchools }
+    return { totalSchools, activeSchools, trialSchools, premiumSchools }
   }
 
   const getSubscriptionStatus = (school: SchoolData) => {
-    if (!school.is_active) {
+    if (school.status !== 'active') {
       return { color: 'bg-gray-100 text-gray-800', icon: AlertTriangle, label: 'Inactive' }
     }
 
-    switch (school.subscription_status) {
-      case 'active':
-        return { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Active' }
-      case 'trial':
-        return { color: 'bg-blue-100 text-blue-800', icon: Clock, label: 'Trial' }
-      case 'expired':
-        return { color: 'bg-red-100 text-red-800', icon: AlertTriangle, label: 'Expired' }
+    switch (school.subscription_plan) {
+      case 'premium':
+        return { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Premium' }
+      case 'basic':
+        return { color: 'bg-blue-100 text-blue-800', icon: Clock, label: 'Basic' }
+      case 'enterprise':
+        return { color: 'bg-purple-100 text-purple-800', icon: CheckCircle, label: 'Enterprise' }
       default:
-        return { color: 'bg-gray-100 text-gray-800', icon: AlertTriangle, label: 'Unknown' }
+        return { color: 'bg-gray-100 text-gray-800', icon: AlertTriangle, label: 'Basic' }
     }
   }
 
@@ -240,8 +238,8 @@ export default function SchoolsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Expired</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.expiredSchools}</p>
+                                      <p className="text-sm text-gray-600">Premium</p>
+                  <p className="text-2xl font-bold text-red-600">{stats.premiumSchools}</p>
                 </div>
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
@@ -340,9 +338,9 @@ export default function SchoolsPage() {
                               <div>
                                 <p className="font-medium">{school.name}</p>
                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                                  school.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                  school.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                 }`}>
-                                  {school.is_active ? 'Active' : 'Inactive'}
+                                  {school.status === 'active' ? 'Active' : 'Inactive'}
                                 </span>
                               </div>
                             </div>
@@ -372,11 +370,9 @@ export default function SchoolsPage() {
                                 {subscriptionStatus.label}
                               </span>
                             </div>
-                            {school.subscription_end_date && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                Expires: {formatDate(school.subscription_end_date)}
-                              </p>
-                            )}
+                            <p className="text-xs text-gray-500 mt-1">
+                              Plan: {school.subscription_plan || 'Basic'}
+                            </p>
                           </TableCell>
                           <TableCell>
                             <span className="text-sm">{formatDate(school.created_at)}</span>

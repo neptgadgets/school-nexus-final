@@ -75,27 +75,27 @@ export default function SuperAdminAnalyticsPage() {
   }
 
   const revenueData = [
-    { name: 'Jan', revenue: 65000, schools: 15 },
-    { name: 'Feb', revenue: 72000, schools: 18 },
-    { name: 'Mar', revenue: 68000, schools: 12 },
-    { name: 'Apr', revenue: 78000, schools: 22 },
-    { name: 'May', revenue: 85000, schools: 25 },
-    { name: 'Jun', revenue: 92000, schools: 28 },
-    { name: 'Jul', revenue: 89000, schools: 20 },
-    { name: 'Aug', revenue: 95000, schools: 30 },
-    { name: 'Sep', revenue: 88000, schools: 18 },
-    { name: 'Oct', revenue: 92000, schools: 24 },
-    { name: 'Nov', revenue: 98000, schools: 26 },
-    { name: 'Dec', revenue: 105000, schools: 32 }
+    { name: 'Jan', value: 65000 },
+    { name: 'Feb', value: 72000 },
+    { name: 'Mar', value: 68000 },
+    { name: 'Apr', value: 78000 },
+    { name: 'May', value: 85000 },
+    { name: 'Jun', value: 92000 },
+    { name: 'Jul', value: 89000 },
+    { name: 'Aug', value: 95000 },
+    { name: 'Sep', value: 88000 },
+    { name: 'Oct', value: 92000 },
+    { name: 'Nov', value: 98000 },
+    { name: 'Dec', value: 105000 }
   ]
 
   const userGrowthData = [
-    { name: 'Week 1', users: 12500 },
-    { name: 'Week 2', users: 13200 },
-    { name: 'Week 3', users: 13800 },
-    { name: 'Week 4', users: 14500 },
-    { name: 'Week 5', users: 15100 },
-    { name: 'Week 6', users: 15420 }
+    { name: 'Week 1', value: 12500 },
+    { name: 'Week 2', value: 13200 },
+    { name: 'Week 3', value: 13800 },
+    { name: 'Week 4', value: 14500 },
+    { name: 'Week 5', value: 15100 },
+    { name: 'Week 6', value: 15420 }
   ]
 
   const subscriptionDistribution = [
@@ -106,13 +106,13 @@ export default function SuperAdminAnalyticsPage() {
   ]
 
   const userActivityData = [
-    { name: 'Mon', active: 8500, total: 10000 },
-    { name: 'Tue', active: 9200, total: 10500 },
-    { name: 'Wed', active: 8800, total: 10200 },
-    { name: 'Thu', active: 9500, total: 11000 },
-    { name: 'Fri', active: 9800, total: 11200 },
-    { name: 'Sat', active: 7200, total: 8500 },
-    { name: 'Sun', active: 6800, total: 8000 }
+    { name: 'Mon', value: 8500 },
+    { name: 'Tue', value: 9200 },
+    { name: 'Wed', value: 8800 },
+    { name: 'Thu', value: 9500 },
+    { name: 'Fri', value: 9800 },
+    { name: 'Sat', value: 7200 },
+    { name: 'Sun', value: 6800 }
   ]
 
   const topSchoolsByRevenue = [

@@ -1,11 +1,11 @@
 // Client-side API utility functions to replace Supabase client calls
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('auth-token')
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
   
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string> || {}),
   }
   
   if (token) {
@@ -19,9 +19,11 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
   
   if (response.status === 401) {
     // Token expired or invalid, redirect to login
-    localStorage.removeItem('auth-token')
-    localStorage.removeItem('user')
-    window.location.href = '/auth/login'
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth-token')
+      localStorage.removeItem('user')
+      window.location.href = '/auth/login'
+    }
     return
   }
   
@@ -128,8 +130,10 @@ export async function logout() {
   } catch (error) {
     console.error('Logout error:', error)
   } finally {
-    localStorage.removeItem('auth-token')
-    localStorage.removeItem('user')
-    window.location.href = '/auth/login'
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth-token')
+      localStorage.removeItem('user')
+      window.location.href = '/auth/login'
+    }
   }
 }

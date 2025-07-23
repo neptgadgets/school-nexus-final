@@ -22,21 +22,9 @@ import {
 } from 'lucide-react'
 import { getCurrentUser } from '@/lib/api'
 
-export default async function HomePage() {
-  // Check if user is already authenticated
-  const session = await getSession()
-  
-  if (session) {
-    const userRole = await getUserRole()
-    if (userRole) {
-      // Redirect authenticated users to their appropriate dashboard
-      if (userRole.role === 'super_admin') {
-        redirect('/super-admin')
-      } else {
-        redirect('/dashboard')
-      }
-    }
-  }
+export default function HomePage() {
+  // Authentication is handled by middleware and individual pages
+  // This is the public landing page
 
   const userTypes = [
     {

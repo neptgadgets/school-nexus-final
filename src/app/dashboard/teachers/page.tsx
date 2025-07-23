@@ -32,9 +32,22 @@ import {
 } from 'lucide-react'
 import { getData } from '@/lib/api'
 
-// Utility function for date formatting
+// Utility functions
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString()
+}
+
+const getStatusColor = (status?: string) => {
+  switch (status) {
+    case 'active':
+      return 'bg-green-100 text-green-800'
+    case 'inactive':
+      return 'bg-red-100 text-red-800'
+    case 'suspended':
+      return 'bg-yellow-100 text-yellow-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
 }
 
 interface Teacher {
@@ -121,16 +134,15 @@ export default function TeachersPage() {
     
     // Simple CSV export
     const csvContent = [
-      Object.keys(exportData[0] || {}).join(','),
-      ...exportData.map(row => Object.values(row).join(','))
-    ].join('
-')
+      Object.keys(exportData[0] || {}).join(","),
+      ...exportData.map(row => Object.values(row).join(","))
+    ].join("\n")
     
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = document.createElement("a")
     a.href = url
-    a.download = 'export.csv'
+    a.download = "export.csv"
     a.click()
     window.URL.revokeObjectURL(url)
   }
