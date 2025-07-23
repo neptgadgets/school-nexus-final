@@ -2,27 +2,13 @@ import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { getCurrentUser } from '@/lib/api'
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Check authentication and role
-  const userRole = await getUserRole()
-  
-  if (!userRole) {
-    redirect('/auth/login')
-  }
-
-  // Redirect super admin to their dashboard
-  if (userRole.role === 'super_admin') {
-    redirect('/super-admin')
-  }
-
-  // Only school admins can access this dashboard
-  if (userRole.role !== 'school_admin') {
-    redirect('/auth/login')
-  }
+  // Authentication is handled by middleware
+  // Role-based access control is handled by the API routes
 
   return (
     <div className="flex h-screen bg-gray-50">

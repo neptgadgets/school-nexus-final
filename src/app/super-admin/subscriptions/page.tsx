@@ -31,7 +31,18 @@ import {
   Zap
 } from 'lucide-react'
 import { getData, getCurrentUser } from '@/lib/api'
-import { formatDate, formatCurrency, exportToCSV } from '@/lib/utils'
+
+// Utility functions
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount)
+}
 
 interface SchoolSubscription {
   id: string
@@ -60,17 +71,25 @@ export default function SubscriptionsPage() {
 
   const fetchSubscriptions = async () => {
     try {
-      const { data, error } = await supabase
-        .from('schools')
-        .select('id, name, email, subscription_status, subscription_end_date, created_at')
-        .order('created_at', { ascending: false })
+      setIsLoading(true)
+      const { data, error } = await getData('/super-admin/schools?limit=100')
 
       if (error) {
         console.error('Error fetching subscriptions:', error)
         return
       }
 
-      setSubscriptions(data || [])
+      // Transform schools data to subscription format
+      const subscriptionsData = data?.schools?.map((school: any) => ({
+        id: school.id,
+        name: school.name,
+        email: school.email,
+        subscription_status: school.subscription_plan ? 'active' : 'trial',
+        subscription_end_date: null, // This would need to be added to the schema
+        created_at: school.created_at
+      })) || []
+
+      setSubscriptions(subscriptionsData)
     } catch (error) {
       console.error('Error fetching subscriptions:', error)
     } finally {
@@ -104,7 +123,20 @@ export default function SubscriptionsPage() {
       'Created': formatDate(sub.created_at),
     }))
     
-    exportToCSV(exportData, 'subscriptions-list')
+    // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const getSubscriptionStats = () => {

@@ -30,7 +30,10 @@ import {
   BarChart3
 } from 'lucide-react'
 import { getData } from '@/lib/api'
-import { formatDate, exportToCSV } from '@/lib/utils'
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface Book {
   id: string
@@ -207,7 +210,20 @@ export default function LibraryPage() {
         'Location': book.location,
         'Status': book.status
       }))
-      exportToCSV(exportData, 'library-books')
+      // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
     } else {
       const exportData = borrowRecords.map(record => ({
         'Book Title': record.book_title,
@@ -218,7 +234,20 @@ export default function LibraryPage() {
         'Status': record.status,
         'Fine Amount': record.fine_amount
       }))
-      exportToCSV(exportData, 'library-borrowing')
+      // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
     }
   }
 

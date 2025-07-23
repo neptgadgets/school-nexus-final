@@ -29,7 +29,10 @@ import {
   GraduationCap
 } from 'lucide-react'
 import { getData } from '@/lib/api'
-import { formatDate, exportToCSV } from '@/lib/utils'
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface Class {
   id: string
@@ -65,36 +68,15 @@ export default function ClassesPage() {
 
   const fetchClasses = async () => {
     try {
-      const { data: { session } } = await Promise.resolve({data: {session: null}})
-      if (!session) return
-
-      const { data: admin } = await supabase
-        .from('administrators')
-        .select('school_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (!admin?.school_id) return
-
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          *,
-          teachers (
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .eq('school_id', admin.school_id)
-        .order('name', { ascending: true })
+      setIsLoading(true)
+      const { data, error } = await getData('/classes')
 
       if (error) {
         console.error('Error fetching classes:', error)
         return
       }
 
-      setClasses(data || [])
+      setClasses(data?.classes || [])
     } catch (error) {
       console.error('Error fetching classes:', error)
     } finally {
@@ -137,7 +119,20 @@ export default function ClassesPage() {
       'Created': formatDate(cls.created_at),
     }))
     
-    exportToCSV(exportData, 'classes-list')
+    // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const getClassStats = () => {

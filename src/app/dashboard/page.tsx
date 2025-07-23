@@ -59,21 +59,21 @@ export default function DashboardPage() {
   }
 
   const monthlyData = [
-    { month: 'Jan', students: 1180, revenue: 145000 },
-    { month: 'Feb', students: 1195, revenue: 148000 },
-    { month: 'Mar', students: 1210, revenue: 152000 },
-    { month: 'Apr', students: 1225, revenue: 155000 },
-    { month: 'May', students: 1240, revenue: 157000 },
-    { month: 'Jun', students: 1247, revenue: 156780 }
+    { name: 'Jan', value: 1180 },
+    { name: 'Feb', value: 1195 },
+    { name: 'Mar', value: 1210 },
+    { name: 'Apr', value: 1225 },
+    { name: 'May', value: 1240 },
+    { name: 'Jun', value: 1247 }
   ]
 
   const attendanceData = [
-    { day: 'Mon', rate: 95 },
-    { day: 'Tue', rate: 97 },
-    { day: 'Wed', rate: 93 },
-    { day: 'Thu', rate: 96 },
-    { day: 'Fri', rate: 92 },
-    { day: 'Sat', rate: 89 }
+    { name: 'Mon', value: 95 },
+    { name: 'Tue', value: 97 },
+    { name: 'Wed', value: 93 },
+    { name: 'Thu', value: 96 },
+    { name: 'Fri', value: 92 },
+    { name: 'Sat', value: 89 }
   ]
 
   // Generate recent activities from real data

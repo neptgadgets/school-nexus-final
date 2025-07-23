@@ -124,7 +124,20 @@ export default function AdministratorsPage() {
       'Created': formatDate(admin.created_at),
     }))
     
-    exportToCSV(exportData, 'administrators-list')
+    // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const getAdminStats = () => {

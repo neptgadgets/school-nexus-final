@@ -23,10 +23,15 @@ import {
   Star,
   Archive,
   Trash2,
-  Eye
+  Eye,
+  Edit
 } from 'lucide-react'
 import { getData } from '@/lib/api'
-import { formatDate } from '@/lib/utils'
+
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 interface Message {
   id: string

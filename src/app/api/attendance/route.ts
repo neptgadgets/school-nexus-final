@@ -98,3 +98,36 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const token = request.cookies.get('auth-token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const decoded = verifyToken(token)
+    if (!decoded || (decoded.role !== 'admin' && decoded.role !== 'teacher')) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { student_id, class_id, date, status, time_in, time_out, notes } = body
+
+    const result = await query(`
+      INSERT INTO attendance (
+        student_id, class_id, date, status, time_in, time_out, notes, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      RETURNING *
+    `, [student_id, class_id, date, status, time_in, time_out, notes])
+
+    return NextResponse.json({ attendance: result.rows[0] })
+
+  } catch (error) {
+    console.error('Create attendance error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create attendance record' },
+      { status: 500 }
+    )
+  }
+}

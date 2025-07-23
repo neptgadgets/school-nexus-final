@@ -29,7 +29,7 @@ import {
   TrendingUp,
   FileText
 } from 'lucide-react'
-import { getData } from '@/lib/api'
+import { getData, postData, putData } from '@/lib/api'
 
 // Utility function for date formatting
 const formatDate = (dateString: string) => {
@@ -82,46 +82,33 @@ export default function AttendancePage() {
 
   const fetchAttendanceData = async () => {
     try {
-      const { data: { session } } = await Promise.resolve({data: {session: null}})
-      if (!session) return
-
-      const { data: admin } = await supabase
-        .from('administrators')
-        .select('school_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (!admin?.school_id) return
-
-      let query = supabase
-        .from('attendance_records')
-        .select(`
-          *,
-          students (
-            first_name,
-            last_name,
-            student_id,
-            classes (
-              name
-            )
-          )
-        `)
-        .eq('date', selectedDate)
-        .eq('students.school_id', admin.school_id)
-
+      setIsLoading(true)
+      
+      let endpoint = `/attendance?date_from=${selectedDate}&date_to=${selectedDate}`
       if (selectedClass !== 'all') {
-        query = query.eq('students.class_id', selectedClass)
+        endpoint += `&class_id=${selectedClass}`
       }
 
-      const { data, error } = await query.order('students.first_name', { ascending: true })
+      const { data, error } = await getData(endpoint)
 
       if (error) {
         console.error('Error fetching attendance:', error)
         return
       }
 
-      setAttendanceRecords(data || [])
-      calculateStats(data || [])
+      setAttendanceRecords(data?.attendance || [])
+      calculateStats(data?.attendance || [])
+      
+      // Update stats from API response
+      if (data?.summary) {
+        setStats({
+          totalStudents: parseInt(data.summary.total_records) || 0,
+          presentToday: parseInt(data.summary.present_count) || 0,
+          absentToday: parseInt(data.summary.absent_count) || 0,
+          lateToday: parseInt(data.summary.late_count) || 0,
+          attendanceRate: parseFloat(data.summary.attendance_rate) || 0
+        })
+      }
     } catch (error) {
       console.error('Error fetching attendance:', error)
     } finally {
@@ -131,26 +118,10 @@ export default function AttendancePage() {
 
   const fetchClasses = async () => {
     try {
-      const { data: { session } } = await Promise.resolve({data: {session: null}})
-      if (!session) return
-
-      const { data: admin } = await supabase
-        .from('administrators')
-        .select('school_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (!admin?.school_id) return
-
-      const { data, error } = await supabase
-        .from('classes')
-        .select('id, name')
-        .eq('school_id', admin.school_id)
-        .eq('is_active', true)
-        .order('name')
+      const { data, error } = await getData('/classes')
 
       if (!error && data) {
-        setClasses(data)
+        setClasses(data.classes || [])
       }
     } catch (error) {
       console.error('Error fetching classes:', error)
@@ -175,45 +146,35 @@ export default function AttendancePage() {
 
   const markAttendance = async (studentId: string, status: 'present' | 'absent' | 'late' | 'excused') => {
     try {
-      const { data: { session } } = await Promise.resolve({data: {session: null}})
-      if (!session) return
-
       const existingRecord = attendanceRecords.find(r => r.student_id === studentId)
+
+      const attendanceData = {
+        student_id: studentId,
+        date: selectedDate,
+        status,
+        time_in: status === 'present' || status === 'late' ? new Date().toISOString() : null
+      }
 
       if (existingRecord) {
         // Update existing record
-        const { error } = await supabase
-          .from('attendance_records')
-          .update({
-            status,
-            time_in: status === 'present' || status === 'late' ? new Date().toISOString() : null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingRecord.id)
-
+        const { data, error } = await putData(`/attendance/${existingRecord.id}`, attendanceData)
         if (error) {
           console.error('Error updating attendance:', error)
           return
         }
       } else {
         // Create new record
-        const { error } = await supabase
-          .from('attendance_records')
-          .insert({
-            student_id: studentId,
-            date: selectedDate,
-            status,
-            time_in: status === 'present' || status === 'late' ? new Date().toISOString() : null,
-            marked_by: session.user.id
-          })
-
+        const { data, error } = await postData('/attendance', {
+          ...attendanceData,
+          class_id: selectedClass !== 'all' ? selectedClass : null
+        })
         if (error) {
           console.error('Error creating attendance:', error)
           return
         }
       }
 
-      // Refresh data
+      // Refresh data from server
       fetchAttendanceData()
     } catch (error) {
       console.error('Error marking attendance:', error)
@@ -252,9 +213,9 @@ export default function AttendancePage() {
 
   const handleExportCSV = () => {
     const exportData = attendanceRecords.map(record => ({
-      'Student ID': record.students.student_id,
-      'Student Name': `${record.students.first_name} ${record.students.last_name}`,
-      'Class': record.students.classes?.name || 'N/A',
+      'Student ID': record.student_id || 'N/A',
+      'Student Name': `${record.student_first_name || ''} ${record.student_last_name || ''}`,
+      'Class': record.class_name || 'N/A',
       'Date': formatDate(record.date),
       'Status': record.status,
       'Time In': record.time_in || 'N/A',
@@ -262,13 +223,25 @@ export default function AttendancePage() {
       'Notes': record.notes || 'N/A'
     }))
     
-    exportToCSV(exportData, `attendance-${selectedDate}`)
+    // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `attendance-${selectedDate}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const filteredRecords = attendanceRecords.filter(record =>
-    record.students.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.students.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.students.student_id.toLowerCase().includes(searchQuery.toLowerCase())
+    (record.student_first_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (record.student_last_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (record.student_id || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -475,21 +448,21 @@ export default function AttendancePage() {
                             <div className="flex items-center space-x-3">
                               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                 <span className="text-xs font-medium text-blue-600">
-                                  {record.students.first_name.charAt(0)}
+                                  {(record.student_first_name || 'S').charAt(0)}
                                 </span>
                               </div>
                               <div>
                                 <p className="font-medium">
-                                  {record.students.first_name} {record.students.last_name}
+                                  {record.student_first_name || ''} {record.student_last_name || ''}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  ID: {record.students.student_id}
+                                  ID: {record.student_id || 'N/A'}
                                 </p>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm">{record.students.classes?.name || 'N/A'}</span>
+                            <span className="text-sm">{record.class_name || 'N/A'}</span>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">

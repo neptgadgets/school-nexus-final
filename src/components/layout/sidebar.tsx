@@ -121,7 +121,7 @@ export function Sidebar() {
   const router = useRouter()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const supabase = getCurrentUser()
+  const user = getCurrentUser()
 
   const handleLogout = async () => {
     setIsLoggingOut(true)

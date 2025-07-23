@@ -28,7 +28,10 @@ import {
   Clock
 } from 'lucide-react'
 import { getData, getCurrentUser } from '@/lib/api'
-import { formatDate, exportToCSV } from '@/lib/utils'
+// Utility function for date formatting
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
+}
 import { CustomLineChart, CustomBarChart } from '@/components/ui/chart'
 
 interface BillingRecord {
@@ -185,7 +188,20 @@ export default function BillingPage() {
       'Subscription Type': record.subscription_type
     }))
     
-    exportToCSV(exportData, 'billing-records')
+    // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const filteredRecords = billingRecords.filter(record => {

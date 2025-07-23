@@ -96,7 +96,7 @@ export default function TeachersPage() {
       filtered = filtered.filter(teacher =>
         teacher.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         teacher.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (teacher.employee_id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         teacher.email.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
@@ -119,7 +119,20 @@ export default function TeachersPage() {
       'Status': teacher.status,
     }))
     
-    exportToCSV(exportData, 'teachers-list')
+    // Simple CSV export
+    const csvContent = [
+      Object.keys(exportData[0] || {}).join(','),
+      ...exportData.map(row => Object.values(row).join(','))
+    ].join('
+')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const getTeacherStats = () => {
